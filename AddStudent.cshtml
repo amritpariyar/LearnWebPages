@@ -1,0 +1,92 @@
+﻿@{
+	Page.Title = "Title goes here";
+	//Layout = "Your Layout Page goes here";
+}
+
+@{ 
+	// Initialize form variables
+	var firstName = "";
+	var lastName = "";
+	var email = "";
+	var dateOfBirth = "";
+	var major = "";
+	var enrollmentDate = DateTime.Now.ToString("yyyy-MM-dd");
+
+	// Process form submission
+	if (IsPost)
+	{
+		AntiForgery.Validate();
+
+		// Get form values
+		firstName = Request.Form["firstName"];
+		lastName = Request.Form["lastName"];
+		email = Request.Form["email"];
+		dateOfBirth = Request.Form["dateOfBirth"];
+		major = Request.Form["major"];
+		enrollmentDate = Request.Form["enrollmentDate"];
+
+		var db = Database.Open("CollegeSite");
+
+		// Check if email already exists
+		var existingStudent = db.QuerySingle("SELECT Email FROM Students WHERE LOWER(Email) = LOWER(@0)", email);
+
+		if (existingStudent == null)
+		{
+			// Insert new student
+			db.Execute(@"INSERT INTO Students (FirstName, LastName, Email, DateOfBirth, Major, EnrollmentDate) 
+                 VALUES (@0, @1, @2, @3, @4, @5)",
+					firstName, lastName, email, dateOfBirth, major, enrollmentDate);
+
+			db.Close();
+
+			// Redirect to students list
+			Response.Redirect("~/Students.cshtml");
+		}
+		else
+		{
+			ModelState.AddFormError("A student with this email address already exists.");
+		}
+	}
+}
+
+<div>
+	<form method="post">
+		@AntiForgery.GetHtml()
+
+		@* Display validation summary *@
+		@Html.ValidationSummary("Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+
+		<fieldset>
+			<legend>Student Information</legend>
+			<ol>
+				<li class="first-name">
+					<label for="firstName">First Name</label>
+					<input type="text" id="firstName" name="firstName" value="@firstName" />
+				</li>
+
+				<li class="last-name">
+					<label for="lastName" >Last Name</label>
+					<input type="text" id="lastName" name="lastName" value="@lastName"/>
+				</li>
+
+				<li class="email">
+					<label for="email" >Email Address</label>
+					<input type="email" id="email" name="email" value="@email" />
+				</li>
+
+				<li class="date-of-birth">
+					<label for="dateOfBirth">Date of Birth</label>
+					<input type="date" id="dateOfBirth" name="dateOfBirth" value="@dateOfBirth" />
+				</li>
+
+				<li class="enrollment-date">
+					<label for="enrollmentDate" >Enrollment Date</label>
+					<input type="date" id="enrollmentDate" name="enrollmentDate" value="@enrollmentDate" />
+				</li>
+			</ol>
+
+			<input type="submit" value="Add Student" />
+			<a href="~/Students.cshtml" class="cancel-link">Cancel</a>
+		</fieldset>
+	</form>
+</div>
