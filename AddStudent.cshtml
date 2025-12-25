@@ -1,6 +1,6 @@
 ﻿@{
 	Page.Title = "Title goes here";
-	//Layout = "Your Layout Page goes here";
+	Layout = "~/_SiteLayout.cshtml";
 }
 
 @{ 
@@ -28,7 +28,8 @@
 		var db = Database.Open("CollegeSite");
 
 		// Check if email already exists
-		var existingStudent = db.QuerySingle("SELECT Email FROM Students WHERE LOWER(Email) = LOWER(@0)", email);
+		var existingStudent = db.QuerySingle("SELECT Email FROM Students WHERE LOWER(Email) = LOWER('"+ email + "')");
+		//var existingStudent = db.QuerySingle("SELECT Email FROM Students WHERE LOWER(Email) = LOWER(@0)", email);
 
 		if (existingStudent == null)
 		{
