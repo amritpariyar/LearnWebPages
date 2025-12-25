@@ -1,0 +1,208 @@
+@{
+  Page.Title = "Edit Student";
+  Layout = "~/_SiteLayout.cshtml";
+
+  var studentId = Request.QueryString["id"];
+  var firstName = "";
+  var lastName = "";
+  var email = "";
+  var dateOfBirth = "";
+  var major = "";
+  var enrollmentDate = "";
+
+  // Validate that an ID was provided
+  if (studentId.IsEmpty() || !studentId.IsInt()) {
+    Response.Redirect("~/Students.cshtml");
+  }
+
+  var db = Database.Open("CollegeSite");
+
+  // If this is a POST request, update the student
+  if (IsPost) {
+    AntiForgery.Validate();
+
+    // Get form values
+    firstName = Request.Form["firstName"];
+    lastName = Request.Form["lastName"];
+    email = Request.Form["email"];
+    dateOfBirth = Request.Form["dateOfBirth"];
+    major = Request.Form["major"];
+    enrollmentDate = Request.Form["enrollmentDate"];
+
+    var existingStudent = db.QuerySingle("SELECT StudentId FROM Students WHERE LOWER(Email) = LOWER(@0) AND StudentId != @1", email, studentId);
+
+    if (existingStudent == null)
+    {
+      // Update the student
+      db.Execute(@"UPDATE Students 
+                 SET FirstName = @0, LastName = @1, Email = @2, DateOfBirth = @3, Major = @4, EnrollmentDate = @5 
+                 WHERE StudentId = @6",
+          firstName, lastName, email, dateOfBirth, major, enrollmentDate, studentId);
+
+      db.Close();
+
+      // Redirect back to the students list
+      Response.Redirect("~/Students.cshtml");
+    }
+    else
+    {
+      ModelState.AddFormError("A student with this email address already exists.");
+    }
+  } else {
+    // Get existing student information
+    var student = db.QuerySingle("SELECT * FROM Students WHERE StudentId = @0", studentId);
+
+    if (student == null) {
+      db.Close();
+      Response.Redirect("~/Students.cshtml");
+    }
+
+    // Populate form fields with existing data
+    firstName = student.FirstName;
+    lastName = student.LastName;
+    email = student.Email;
+    dateOfBirth = student.DateOfBirth != null ? ((DateTime)student.DateOfBirth).ToString("yyyy-MM-dd") : "";
+    major = student.Major;
+    enrollmentDate = ((DateTime)student.EnrollmentDate).ToString("yyyy-MM-dd");
+  }
+}
+
+<hgroup class="title">
+    <h1>@Page.Title</h1>
+    <h2>Update student information</h2>
+</hgroup>
+
+<form method="post">
+    @AntiForgery.GetHtml()
+    
+    @* Display validation summary *@
+    @Html.ValidationSummary("Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    
+    <fieldset>
+        <legend>Student Information</legend>
+        <ol>
+            <li class="first-name">
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName" name="firstName" value="@firstName" />
+            </li>
+            
+            <li class="last-name">
+                <label for="lastName">Last Name</label>
+                <input type="text" id="lastName" name="lastName" value="@lastName"/>
+            </li>
+            
+            <li class="email">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" value="@email"/>
+            </li>
+            
+            <li class="date-of-birth">
+                <label for="dateOfBirth">Date of Birth</label>
+                <input type="date" id="dateOfBirth" name="dateOfBirth" value="@dateOfBirth" />
+            </li>
+            
+            
+            <li class="enrollment-date">
+                <label for="enrollmentDate">Enrollment Date</label>
+                <input type="date" id="enrollmentDate" name="enrollmentDate" value="@enrollmentDate"/>
+            </li>
+        </ol>
+        
+        <input type="submit" value="Update Student" />
+        <a href="~/Students.cshtml" class="cancel-link">Cancel</a>
+    </fieldset>
+</form>
+
+<style>
+    fieldset {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    
+    legend {
+        font-weight: bold;
+        padding: 0 10px;
+    }
+    
+    ol {
+        list-style: none;
+        padding: 0;
+    }
+    
+    li {
+        margin-bottom: 15px;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    label.error-label {
+        color: #d9534f;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="date"],
+    select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        box-sizing: border-box;
+    }
+    
+    input[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    
+    input[type="submit"]:hover {
+        background-color: #45a049;
+    }
+    
+    .cancel-link {
+        margin-left: 10px;
+        padding: 10px 20px;
+        text-decoration: none;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    
+    .cancel-link:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .field-validation-error {
+        color: #d9534f;
+        font-size: 0.9em;
+        margin-top: 5px;
+        display: block;
+    }
+    
+    .validation-summary-errors {
+        background-color: #f2dede;
+        border: 1px solid #ebccd1;
+        color: #a94442;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+</style>
+
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}

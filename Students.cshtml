@@ -1,5 +1,5 @@
 ﻿@{
-	Page.Title = "Title goes here";
+	Page.Title = "Students List";
 	Layout = "~/_SiteLayout.cshtml";
 
 	//Add your code to connect to database here
@@ -22,18 +22,18 @@
 			Major NVARCHAR(100),
 			EnrollmentDate DATETIME NOT NULL
 		)");
-		// Close the database connection
-		db.Close();
-	}
-	else
-	{
-		// Fetch all student records
 	}
 
 	var students = db.Query("SELECT * FROM Students ORDER BY LastName, FirstName");
 
 }
 <div>
+	<h1>@Page.Title</h1>
+	
+	<p>
+		<a href="~/AddStudent.cshtml" class="add-button">Add New Student</a>
+	</p>
+	
 	@if (students.Any())
 	{
 		<table>
@@ -59,8 +59,8 @@
 						<td>@student.Major</td>
 						<td>@student.EnrollmentDate.ToString("MM/dd/yyyy")</td>
 						<td>
-							<a href="~/EditStudent.cshtml?id=@student.StudentId">Edit</a> |
-							<a href="~/DeleteStudent.cshtml?id=@student.StudentId">Delete</a>
+							<a href="~/EditStudent.cshtml?id=@student.StudentId" class="edit-link">Edit</a> |
+							<a href="~/DeleteStudent.cshtml?id=@student.StudentId" class="delete-link">Delete</a>
 						</td>
 					</tr>
 				}
@@ -69,6 +69,73 @@
 	}
 	else
 	{
-		<p>No students found. <a href="~/AddStudent.cshtml">Add the new student</a></p>
+		<p class="no-records">No students found. <a href="~/AddStudent.cshtml">Add the first student</a></p>
 	}
 </div>
+
+<style>
+	.add-button {
+		display: inline-block;
+		background-color: #4CAF50;
+		color: white;
+		padding: 10px 20px;
+		text-decoration: none;
+		border-radius: 4px;
+		margin-bottom: 20px;
+	}
+	
+	.add-button:hover {
+		background-color: #45a049;
+	}
+	
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-top: 20px;
+	}
+	
+	th, td {
+		padding: 10px;
+		text-align: left;
+		border: 1px solid #ddd;
+	}
+	
+	th {
+		background-color: #4CAF50;
+		color: white;
+	}
+	
+	tr:nth-child(even) {
+		background-color: #f2f2f2;
+	}
+	
+	tr:hover {
+		background-color: #ddd;
+	}
+	
+	.edit-link {
+		color: #007bff;
+		text-decoration: none;
+	}
+	
+	.edit-link:hover {
+		text-decoration: underline;
+	}
+	
+	.delete-link {
+		color: #d9534f;
+		text-decoration: none;
+	}
+	
+	.delete-link:hover {
+		text-decoration: underline;
+	}
+	
+	.no-records {
+		padding: 20px;
+		background-color: #f9f9f9;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		text-align: center;
+	}
+</style>
