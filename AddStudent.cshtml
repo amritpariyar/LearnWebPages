@@ -53,7 +53,7 @@
 <div>
 	<form method="post">
 		@AntiForgery.GetHtml()
-
+		@(/* */)
 		@* Display validation summary *@
 		@Html.ValidationSummary("Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
 
