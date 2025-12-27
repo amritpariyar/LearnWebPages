@@ -266,6 +266,9 @@ ServiceFabricBackup/
 *.ldf
 *.ndf
 
+# SQL Server Compact files (but keep App_Data folder structure)
+App_Data/*.sdf
+
 # Business Intelligence projects
 *.rdl.data
 *.bim.layout
